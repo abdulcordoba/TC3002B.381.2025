@@ -131,7 +131,7 @@ if __name__ == '__main__':
     #Grammar1().parse('((a+a)+a)')
     #Grammar2().parse('(())()')
     #Grammar3().parse('i+i*i')
-    #Grammar4().parse('i(0)i(1)oeo')
+    Grammar4().parse('n+n+n')
     Grammarn().parse('i(0)i(1)oeo')
 
 

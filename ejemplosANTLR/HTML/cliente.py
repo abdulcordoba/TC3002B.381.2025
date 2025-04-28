@@ -11,6 +11,7 @@ class TreePrinter(HTMLParserListener):
         pass
 
     def enterHtmlAttribute(self, ctx:HTMLParser.HtmlAttributeContext):
+        #<TAG bcd="asdf" ihk="345">
         if ctx.TAG_NAME().getText() == "style":
             print(ctx.ATTVALUE_VALUE().getText())
 
