@@ -1,34 +1,56 @@
 from antlr4 import *
+from antlr.MayoParser import MayoParser
+from antlr.MayoLexer import MayoLexer
+from antlr.MayoListener import MayoListener
 
 # elParser, elLexer, elListener serán generados a partir del .g4, importar arriba
 
-class miListener(elListener):
-    # Aquí sobreescribir los métodos del Listener genérico para implementar la lógica
-    # Recordar orden en profundidad del recorrido
+class miListener(MayoListener):
+    variables = {}
+    def enterDec_entera(self, ctx: MayoParser.Dec_enteraContext):
+        for x in ctx.SIMBOLO():
+            if x.getText() in self.variables:
+                raise Exception("Variable previamente declarada")
+            self.variables[x.getText()] = 'entero'
 
-    # Por ejemplo
-    # ctx: elParser.ProgramContext tiene los métodos para recuperar las partes de esa regla gramatical
-    # Si la regla en el g4 es: program: (expresion | sentencia)*;
-    # existen métodos: ctx.expresion(), ctx.sentencia() para no terminales
-    # si son tokens: holamundo: VARIABLE
-    # entonces existe: ctx.VARIABLE().getText()
-    # para recuperar el string correspondiente al token
+class miListener2(MayoListener):
+    def exitAdd(self, ctx:MayoParser.AddContext):
+        if ctx.expresion(0).data_type != ctx.expresion(1).data_type:
+            raise Exception("Tipos de datos no coinciden")
+        ctx.data_type = ctx.expresion(0).data_type
+    def enterNumber(self, ctx:MayoParser.NumberContext):
+        ctx.data_type = 'entero'
 
-    # def enterProgram(self, ctx: elParser.ProgramContext):
-    #    pass
+    def enterVar(self, ctx:MayoParser.VarContext):
+        if ctx.getText() not in self.variables:
+            raise Exception("Variable no declarada previamente")
+        ctx.data_type = self.variables[ctx.getText()]
 
-    pass
+class miListener3(MayoListener):
+    funciones = {}
+    def enterFuncion(self, ctx:MayoParser.FuncionContext):
+        params = {}
+        for p in ctx.parametro():
+             params[p.SIMBOLO.getText()] = p.tipo.getText()
+        self.funciones[ctx.SIMBOLO] = params
+
+    def exitCall(self, ctx:MayoParser.CallContext):
+        for e, p in zip(ctx.expresion(), self.funciones[ctx.SIMBOLO.getText()]):
+            if e.data_type != p:
+                raise Exception("Tipos de datos no coinciden")
+
 
 def main():
-    parser = elParser(CommonTokenStream(elLexer(FileStream('test.txt'))))
+    parser = MayoParser(CommonTokenStream(MayoLexer(FileStream('test.txt'))))
+
     tree = parser.program()
 
     walker = ParseTreeWalker()
     # Puedo hacer los recorridos con los listeners que quiera!
 
     walker.walk(miListener(), tree)
-    walker.walk(miListener(), tree)
-    walker.walk(miListener(), tree)
+    #walker.walk(miListener(), tree)
+    #walker.walk(miListener(), tree)
 
 if __name__ == '__main__':
     main()

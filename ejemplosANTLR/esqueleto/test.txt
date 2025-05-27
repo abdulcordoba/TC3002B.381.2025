@@ -1,0 +1,2 @@
+entero Xx, Yy
+entero Aa, Xx
